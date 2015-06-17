@@ -1,54 +1,60 @@
 var qitcommonsModule = angular.module("qitcommonsModule", []);
 
-qitcommonsModule.service("qListControllerFactory", ["$location", "$timeout", function ($location, $timeout) {
-    function ListController(scope, config) {
-        this.queryContactsTimer = undefined;
+qitcommonsModule.service("$qListController", ["$location", "$timeout", function ($location, $timeout) {
+    return function(scope, config) {
+        this.queryTimer = undefined;
         var filterName = (config.name + "Filter");
 
-        if ($location.search().p) {
-            scope.page = parseInt($location.search().p)
-        } else {
-            scope.page = 1
+        scope.page = config.page;
+        if (!angular.isNumber(scope.page)) {
+            if (!isNaN(parseInt($location.search().p))) {
+                scope.page = parseInt($location.search().p)
+            } else {
+                scope.page = 1
+            }
         }
         scope.pageSize = config.pageSize || 10;
-        scope[filterName] = $location.search().q;
-        var listParams = {q: scope[filterName], p: scope.page, ps: scope.pageSize};
+        scope.query = $location.search().q;
+        var listParams = {query: scope.query, page: scope.page, pageSize: scope.pageSize};
         listParams = angular.extend(listParams, config.params);
-        scope[config.name] = config.service.list(listParams, function (data) {
-            if (config.success) {
-                config.success(data);
-            }
-        });
+        scope.list = config.service(listParams, config.success, config.error);
 
-        $("#" + filterName).focus();
+        if (config.filter) {
+            if (typeof config.filter == "string") {
+                $(config.filter).focus();
+            } else if (config.filter.focus) {
+                config.filter.focus();
+            }
+        }
 
         scope.clearFilter = function () {
-            $timeout.cancel(this.queryContactsTimer);
-            scope[filterName] = "";
+            $timeout.cancel(this.queryTimer);
+            scope.query = null;
             $location.search("q", undefined);
         };
 
-        scope.changedFilter = function () {
-            $timeout.cancel(this.queryContactsTimer);
-            this.queryContactsTimer = $timeout(function () {
-                scope.queryContacts();
-            }, 1000);
+        scope.typingFilter = function (query) {
+            $timeout.cancel(this.queryTimer);
+            this.queryTimer = $timeout(function () {
+                scope.filter(query);
+            }, config.typingTimeout || 1000);
         };
 
-        scope.queryContacts = function () {
-            $timeout.cancel(this.queryContactsTimer);
-            $location.search("p", undefined);
-            if (scope[filterName]) {
-                $location.search("q", scope[filterName]);
-            } else {
-                $location.search("q", undefined);
+        scope.filter = function (query) {
+            $timeout.cancel(this.queryTimer);
+            if (angular.isDefined(query)) {
+                scope.query = query;
+            }
+            if (typeof scope.query == "string" || scope.query == null) {
+                $location.search("p", undefined);
+
+                if (scope.query) {
+                    $location.search("q", scope.query);
+                } else {
+                    $location.search("q", undefined);
+                }
             }
         }
-
-    }
-
-    this.controller = function (scope, config) {
-        return new ListController(scope, config);
     }
 }]);
 
@@ -340,12 +346,11 @@ qitcommonsModule.directive("qLabel", function () {
     };
 });
 
-qitcommonsModule.service("qAlert", ["$timeout", function ($timeout) {
+qitcommonsModule.service("$qAlert", ["$timeout", function ($timeout) {
 
     var show = function (args, type) {
-        var statusPanel = $('<div id="status-panel" class="status-panel alert alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><span class="alert-body"></span></div>');
+        var statusPanel = $('<div class="status-panel alert alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><span class="alert-body"></span></div>');
         var statusBody = $(".alert-body", statusPanel);
-        var content = $("#content");
 
         var finalMessage = args[0];
         var messageParams = args[1];
@@ -353,31 +358,37 @@ qitcommonsModule.service("qAlert", ["$timeout", function ($timeout) {
             messageParams = Array.prototype.slice.call(args, 1)
         }
 
+        var timeout = 10000;
         if (messageParams) {
-            for (var i in messageParams) {
-                finalMessage = finalMessage.replace("{" + i + "}", messageParams[i]);
+            for (var i=0;i<messageParams.length;i++) {
+                if (finalMessage.indexOf("{" + i + "}") >= 0) {
+                    finalMessage = finalMessage.replace("{" + i + "}", messageParams[i]);
+                }
+            }
+            if (messageParams.length > 0 && typeof  messageParams[messageParams.length - 1] === "number") {
+                timeout = messageParams[messageParams.length - 1];
             }
         }
         statusPanel.addClass("alert-" + type);
         statusBody.html(finalMessage);
-        content.prepend(statusPanel);
+        $(document.body).prepend(statusPanel);
         statusPanel.alert();
         $timeout(function () {
             statusPanel.alert('close');
-        }, 10000);
+        }, timeout);
     };
 
     return {
-        success: function (message, params) {
+        success: function (message, params, timeout) {
             show(arguments, "success");
         },
-        info: function (message, params) {
+        info: function (message, params, timeout) {
             show(arguments, "info");
         },
-        warning: function (message, params) {
+        warning: function (message, params, timeout) {
             show(arguments, "warning");
         },
-        danger: function (message, params) {
+        danger: function (message, params, timeout) {
             show(arguments, "danger");
         }
     };
@@ -527,12 +538,33 @@ qitcommonsModule.directive('qMagnificPopup', function () {
     }
 });
 
-qitcommonsModule.service("qUtils", function () {
+qitcommonsModule.service("$qUtils", function () {
     return {
         bool: function (value, def) {
-            def = def || true;
-            var result = value === undefined ? def : value;
-            return (typeof result === "string") ? result === "true" : result;
+            def = def || false;
+            var result = value === undefined || value === null ? def : value;
+            if (typeof result === "boolean") {
+                return result;
+            } else if (typeof result === "string") {
+                result = result.toLowerCase();
+                return result === "true"
+                    || result === "yes"
+                    || result === "on"
+                    || result === "t"
+                    || result === "y"
+                    || result === "1";
+            } else if (typeof result === "number") {
+                return !isNaN(result)
+                    && result !== Number.NEGATIVE_INFINITY
+                    && result !== Number.POSITIVE_INFINITY
+                    && result != 0;
+            } else if (Array.isArray(result)) {
+                return result.length > 0;
+            } else if (typeof result === "object") {
+                return true;
+            } else {
+                return def;
+            }
         },
 
         uuid: function () {

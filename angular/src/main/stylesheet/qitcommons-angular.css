@@ -1,0 +1,18 @@
+.status-panel {
+    position: fixed;
+    right: 10px;
+    top: 60px;
+    z-index: 10000;
+    min-width: 300px;
+    border: 1px solid #3c763d;
+}
+
+.status-panel.fade {
+    opacity: 0;
+    -webkit-transition: opacity 5s linear;
+    -o-transition: opacity 5s linear;
+    transition: opacity 5s linear;
+}
+.status-panel.fade.in {
+    opacity: 1;
+}
