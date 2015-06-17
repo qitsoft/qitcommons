@@ -61,6 +61,7 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
 qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location, $parse) {
     return {
         restrict: "E",
+        replace: true,
         template: '<ul class="pagination">' +
         '<li ng-repeat="page in pages" ng-class="{active: page.active, disabled: page.disabled}" ng-show="totalPages>1">' +
         '<span ng-if="page.disabled">{{page.name}}</span>' +
@@ -302,21 +303,27 @@ qitcommonsModule.directive("qMessage", function () {
     };
 });
 
-qitcommonsModule.directive("qLabel", function () {
+qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
     return {
         require: "^form",
         restrict: "E",
         transclude: true,
+        replace: true,
         scope: {
             "for": "@",
             "disabled": "@",
             "class": "@"
         },
-        template: '<label class="q-label control-label {{class}}" for="{{for}}" ng-transclude></label>',
-        link: function (scope, elements, attrs, ctrl) {
-            var element = $("label", elements);
+        template: '<label class="q-label control-label" ng-transclude></label>',
+        link: function (scope, element, attrs, ctrl) {
+            if (!attrs.for) {
+                throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
+            }
+            if (!ctrl[attrs.for]) {
+                throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs.for + "'.");
+            }
             scope.$watch("disabled", function (value) {
-                if (value) {
+                if ($qUtils.bool(value, false)) {
                     element.addClass("disabled");
                 } else {
                     element.removeClass("disabled");
@@ -344,7 +351,7 @@ qitcommonsModule.directive("qLabel", function () {
             });
         }
     };
-});
+}]);
 
 qitcommonsModule.service("$qAlert", ["$timeout", function ($timeout) {
 

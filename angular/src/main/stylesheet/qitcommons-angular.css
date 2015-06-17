@@ -16,3 +16,7 @@
 .status-panel.fade.in {
     opacity: 1;
 }
+
+.q-label.ng-dirty.ng-invalid {
+    color: red;
+}
