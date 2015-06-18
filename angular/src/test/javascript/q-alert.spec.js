@@ -1,4 +1,4 @@
-describe("Test qAlert service.", function() {
+describe("Test $qAlert service.", function() {
     var $compile, $qAlert, $timeout, $body;
 
     beforeEach(function() {

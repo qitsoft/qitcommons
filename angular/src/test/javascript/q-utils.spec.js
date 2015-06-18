@@ -1,4 +1,4 @@
-describe("Test qUnit angular service.", function () {
+describe("Test $qUnit service.", function () {
     beforeEach(module("qitcommonsModule"));
 
     var $qUtils;

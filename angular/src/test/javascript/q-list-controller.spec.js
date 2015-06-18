@@ -1,4 +1,4 @@
-describe("Test qListController service.", function () {
+describe("Test $qListController service.", function () {
     const QUERY = "qwerty";
 
     beforeEach(module('qitcommonsModule'));
