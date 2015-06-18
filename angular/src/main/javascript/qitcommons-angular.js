@@ -263,25 +263,35 @@ qitcommonsModule.directive("qDualFormGroupEdit", function () {
     return qDualFormGroupItem('<div ng-if="editMode" ng-class="styles" ng-transclude></div>');
 });
 
-qitcommonsModule.directive("qMessage", function () {
+qitcommonsModule.directive("qErrorMessage", function () {
     return {
         require: "^form",
         restrict: "E",
         transclude: true,
+        replace: true,
         scope: {
             "for": "@",
             "error": "@"
         },
-        template: '<span class="help-block" ng-transclude></span>',
-        link: function (scope, elements, attrs, ctrl) {
-            var element = $("span", elements);
+        template: '<span class="q-error-message help-block" ng-transclude></span>',
+        link: function (scope, element, attrs, ctrl) {
+            if (!attrs.for) {
+                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
+            }
+            if (!ctrl[attrs.for]) {
+                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs.for + "'.");
+            }
+            if (!attrs.error) {
+                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'error' attribute specified.");
+            }
+            element.hide();
             scope.$watch(function () {
                 return ctrl[attrs['for']].$error[attrs.error];
             }, function (value) {
                 if (value) {
                     element.fadeIn();
                 } else {
-                    element.hide();
+                    element.fadeOut();
                 }
             });
             scope.$watch(function () {

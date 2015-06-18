@@ -17,6 +17,7 @@
     opacity: 1;
 }
 
-.q-label.ng-dirty.ng-invalid {
+.q-label.ng-dirty.ng-invalid,
+.q-error-message.ng-dirty.ng-invalid{
     color: red;
 }
