@@ -58,95 +58,119 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
     }
 }]);
 
-qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location, $parse) {
+qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location) {
     return {
         restrict: "E",
         replace: true,
-        template: '<ul class="pagination">' +
-        '<li ng-repeat="page in pages" ng-class="{active: page.active, disabled: page.disabled}" ng-show="totalPages>1">' +
-        '<span ng-if="page.disabled">{{page.name}}</span>' +
-        '<a ng-if="!page.disabled" href="" ng-click="page.action()">{{page.name}}</a>' +
+        template: '<ul class="q-pager pagination">' +
+        '<li ng-repeat="p in pages" ng-class="{active: p.page == page, disabled: !p.clicakble}" ng-show="total>1">' +
+        '<span ng-if="!p.clickable">{{p.page}}</span>' +
+        '<a ng-if="p.clickable" href="javascript:void(0);" ng-click="p.action()">{{p.page}}</a>' +
         '</li>' +
         '</ul>',
         scope: {
-            totalItems: '@',
-            page: "=",
+            items: '@',
+            page: "@",
             pageSize: "@",
-            change: "@"
+            total: "@",
+            change: "&"
         },
-        controller: function ($scope) {
-            if (!$scope.change) {
-                $scope.changeCallback = function (scope, data) {
-                    var page = data.$page;
-                    if (page == 0 || page == 1) {
-                        $location.search("p", undefined);
+        link: function (scope, element, attrs) {
+
+            var move = function(page) {
+                if (attrs.change) {
+                    scope.change({$page: page, $oldPage: scope.page});
+                    scope.page = page;
+                } else {
+                    if (page == 1) {
+                        $location.search("p", null);
                     } else {
                         $location.search("p", page);
                     }
                 }
-            } else {
-                $scope.changeCallback = $parse($scope.change);
-            }
+            };
 
-            function fixParamTypes() {
-                $scope.totalItems = parseInt($scope.totalItems);
-                $scope.page = $scope.page;
-                $scope.pageSize = parseInt($scope.pageSize);
-            }
-
-            function getTotalPages() {
-                return Math.floor(($scope.totalItems + $scope.pageSize - 1) / $scope.pageSize);
-            }
-
-            function buildPagerItem(name, disabled, hrefPage) {
+            var pageItem = function(name, clickable, page) {
                 return {
-                    name: name,
-                    active: $scope.page == name,
-                    disabled: disabled,
-                    action: function () {
-                        $scope.changeCallback($scope.$parent, {$page: hrefPage});
-                        $scope.page = hrefPage;
+                    page: name,
+                    clickable: clickable,
+                    action: function() {
+                        move(page);
                     }
-                };
-            }
+                }
+            };
 
-            var updatePager = function () {
-                fixParamTypes();
-                $scope.pages = [];
-                $scope.totalPages = getTotalPages();
+            var update = function() {
+                scope.page = parseInt(scope.page);
+                if (isNaN(scope.page)) {
+                    scope.page = parseInt($location.search().p);
+                }
+                if (isNaN(scope.page)) {
+                    scope.page = 1;
+                }
 
-                var lowerEdge = $scope.page - 4;
-                var upperEdge = $scope.page + 4;
-                if (lowerEdge <= 0) {
+                if (angular.isDefined(scope.total)) {
+                    scope.calculatedTotal = parseInt(scope.total);
+                } else if (angular.isDefined(scope.items)) {
+                    scope.items = parseInt(scope.items);
+                    scope.pageSize = parseInt(scope.pageSize);
+                    if (isNaN(scope.pageSize)) {
+                        throw new Error("Page size should be defined and should be a number in component qPager.");
+                    }
+                    if (scope.pageSize <= 0) {
+                        throw new Error("Page size should be greater than 0 in component qPager.");
+                    }
+                    scope.calculatedTotal = Math.ceil(scope.items / scope.pageSize);
+                }
+                if (scope.page > scope.calculatedTotal) {
+                    move(scope.calculatedTotal);
+                    return;
+                }
+                if (scope.page < 1) {
+                    move(1);
+                    return;
+                }
+
+                var lowerEdge = scope.page - 4;
+                var upperEdge = scope.page + 4;
+                if (scope.calculatedTotal == 10) {
                     lowerEdge = 1;
-                    upperEdge = lowerEdge + 8;
-                }
-                if (upperEdge > $scope.totalPages) {
-                    upperEdge = $scope.totalPages;
-                    lowerEdge = upperEdge - 8;
-                }
-                if (lowerEdge <= 0) {
-                    lowerEdge = 1;
+                    upperEdge = 10;
+                } else {
+                    if (lowerEdge <= 0) {
+                        lowerEdge = 1;
+                        upperEdge = lowerEdge + 8;
+                    }
+                    if (upperEdge > scope.calculatedTotal) {
+                        upperEdge = scope.calculatedTotal;
+                        lowerEdge = upperEdge - 8;
+                    }
+                    if (lowerEdge <= 0) {
+                        lowerEdge = 1;
+                    }
                 }
 
-                $scope.pages.push(buildPagerItem("«", $scope.page == 1, $scope.page - 1));
+                scope.pages = [];
+                scope.pages.push(pageItem("«", scope.page > 1, scope.page - 1));
                 if (lowerEdge > 1) {
-                    $scope.pages.push(buildPagerItem("1", false, 1));
-                    $scope.pages.push(buildPagerItem("…", true, 0));
+                    scope.pages.push(pageItem(1, true, 1));
+                    scope.pages.push(pageItem("…", false));
                 }
-                for (var i = lowerEdge; i <= upperEdge; i++) {
-                    $scope.pages.push(buildPagerItem(i, false, i));
+                for(var i=lowerEdge;i<=upperEdge;i++) {
+                    scope.pages.push(pageItem(i, true, i));
                 }
-                if (upperEdge < $scope.totalPages) {
-                    $scope.pages.push(buildPagerItem("…", true, 0));
-                    $scope.pages.push(buildPagerItem($scope.totalPages, false, $scope.totalPages));
+                if (upperEdge < scope.calculatedTotal) {
+                    scope.pages.push(pageItem("…", false));
+                    scope.pages.push(pageItem(scope.calculatedTotal, true, scope.calculatedTotal));
                 }
-                $scope.pages.push(buildPagerItem("»", $scope.page == $scope.totalPages, $scope.page + 1));
-            }
+                scope.pages.push(pageItem("»", scope.page < scope.calculatedTotal, scope.page + 1));
+            };
 
-            $scope.$watch("totalItems", updatePager);
-            $scope.$watch("page", updatePager);
-            $scope.$watch("pageSize", updatePager);
+            scope.$watch("page", update);
+            scope.$watch("total", update);
+            scope.$watch("items", update);
+            scope.$watch("pageSize", update);
+            update();
         }
     }
 }]);
