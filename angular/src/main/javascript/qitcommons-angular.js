@@ -175,66 +175,86 @@ qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location
     }
 }]);
 
-qitcommonsModule.directive("qDualFormGroup", ["qUtils", function (qUtils) {
+qitcommonsModule.directive("qDualFormGroup", ["$qUtils", function ($qUtils) {
     return {
         restrict: "E",
         transclude: true,
+        replace: true,
         scope: {
             label: "@",
-            editMode: "=",
-            showLabelAttr: "@showLabel",
-            panelClass: "@",
+            editMode: "@",
+            showLabel: "@",
             name: "@"
         },
         template: function (element, attrs) {
-            attrs.name = attrs.name || "form_" + generateUUID().replace(/[^0-9a-fA-F]/g, "");
+            attrs.name = attrs.name || "form_" + $qUtils.uuid().replace(/[^0-9a-fA-F]/g, "");
             return '<ng-form name="' + attrs.name + '">' +
                 '<div class="form-group" ng-class="styles">' +
-                '<label ng-if="showLabel" class="col-sm-2 control-label">{{label}}</label>' +
-                '<div ng-if="!showLabel" class="col-sm-2"></div>' +
+                '<label ng-if="labelExists" class="col-sm-2 col-md-2 col-lg-2 control-label">{{label}}</label>' +
+                '<div ng-if="!labelExists" class="col-sm-2 col-md-2 col-lg-2"></div>' +
                 '<div ng-transclude>' +
                 '</div>' +
                 '</div>' +
                 '</ng-form>';
         },
-        controller: function ($scope, $element, $attrs, $transclude) {
-            $scope.showLabel = qUtils.bool($scope.showLabelAttr);
-            $scope.viewVisible = true;
-            $scope.editVisible = true;
-            $scope.styles = [$scope.panelClass];
+        link: function($scope, $element, $attrs) {
+            var editModeListener = function () {
+                var editMode = $qUtils.bool($scope.editMode, false);
+                var viewPanels = $element.find(".q-dual-form-group-view");
+                var editPanels = $element.find(".q-dual-form-group-edit");
 
-            var transcludeElement = $element.find("div[ng-transclude]");
-            var hasNoChildren = function (view) {
-                var count = 0;
-                var nodeName = view ? "QDUALFORMGROUPVIEW" : "QDUALFORMGROUPEDIT";
-                transcludeElement.children().each(function (i, e) {
-                    if (nodeName == e.nodeName.replace(/[^a-zA-Z0-9]+/g, "").toUpperCase()) {
-                        count++;
+                if (editMode) {
+                    if (editPanels.length == 0) {
+                        $element.hide();
+                    } else {
+                        $element.show();
+                        viewPanels.hide();
+                        editPanels.show();
                     }
-                });
-                return count == 0;
-            };
-            var showHideMe = function () {
-                if (($scope.editMode && hasNoChildren(false))
-                    || (!$scope.editMode && hasNoChildren(true))) {
-                    $element.hide();
                 } else {
-                    $element.show();
+                    if (viewPanels.length == 0) {
+                        $element.hide();
+                    } else {
+                        $element.show();
+                        editPanels.hide();
+                        viewPanels.show();
+                    }
                 }
             };
+
             var domUpdateListener = function (e) {
                 if (e.target == e.currentTarget || e.target.parentElement != e.currentTarget) {
                     return;
                 }
-                showHideMe();
+                editModeListener();
             };
 
-            this.$watchEditMode = function (listener) {
-                $scope.$watch("editMode", listener);
+            var updateLabel = function(value) {
+                if (angular.isUndefined($scope.label) || $scope.label == null || $.trim($scope.label) == '') {
+                    $scope.labelExists = false;
+                } else {
+                    $scope.labelExists = $qUtils.bool($scope.showLabel, true);
+                }
             };
 
-            $scope.$watch("showLabelAttr", function (value) {
-                $scope.showLabel = qUtils.bool(value);
+            $scope.$watch("label", updateLabel);
+            $scope.$watch("showLabel", updateLabel);
+
+            $scope.$watch(function() {
+                return $element.attr('class');
+            }, function(value) {
+                if (typeof value == "string") {
+                    var classes = $.trim(value);
+                    if (classes[0] == '[' && classes[classes.length - 1] == ']') {
+                        $scope.styles = $.map($.trim(classes.substring(1, classes.length - 1)).split(/[\s,]+/), function(e){
+                            return e.replace(/["']/g, "");
+                        });
+                    } else {
+                        $scope.styles = classes.split(/[\s]+/);
+                    }
+                } else {
+                    $scope.styles = [];
+                }
             });
 
             if ($scope.name && $scope.name != "") {
@@ -243,48 +263,62 @@ qitcommonsModule.directive("qDualFormGroup", ["qUtils", function (qUtils) {
                 });
                 $scope.$parent[$scope.name] = $scope.name;
             }
-            this.$watchEditMode(showHideMe);
+            $scope.$watch("editMode", editModeListener);
+
+            var transcludeElement = $element.find("div[ng-transclude]");
             transcludeElement.bind("DOMNodeInserted", domUpdateListener);
             transcludeElement.bind("DOMNodeRemoved", domUpdateListener);
+
+            $scope.editMode = $qUtils.bool($scope.editMode, false);
+        },
+        controller: function ($scope, $element, $attrs, $transclude) {
         }
     }
 }]);
 
-var qDualFormGroupItem = function (template) {
+var qDualFormGroupItem = function (template, type) {
     return {
         require: "^qDualFormGroup",
         restrict: "E",
+        replace: true,
         transclude: true,
         scope: {
             offset: "@",
-            width: "@",
-            panelClass: "@"
+            width: "@"
         },
         template: template,
         link: function (scope, element, attrs, ctrl) {
-            scope.width = scope.width || 6;
-            ctrl.$watchEditMode(function (value) {
-                scope.editMode = value;
+            scope.$watch("width", function(value, old){
+                scope.width = scope.width || 6;
+                element.removeClass("col-sm-" + old);
+                element.removeClass("col-md-" + old);
+                element.removeClass("col-lg-" + old);
+
+                element.addClass("col-sm-" + value);
+                element.addClass("col-md-" + value);
+                element.addClass("col-lg-" + value);
             });
-            scope.styles = ["col-sm-" + scope.width, "col-md-" + scope.width, "col-lg-" + scope.width];
-            if (scope.offset) {
-                scope.styles.push("col-sm-offset-" + scope.offset);
-                scope.styles.push("col-md-offset-" + scope.offset);
-                scope.styles.push("col-lg-offset-" + scope.offset);
-            }
-            if (scope.panelClass) {
-                scope.styles.push(scope.panelClass);
-            }
+            scope.$watch("offset", function(value, old) {
+                element.removeClass("col-sm-offset-" + old);
+                element.removeClass("col-md-offset-" + old);
+                element.removeClass("col-lg-offset-" + old);
+
+                if (value) {
+                    element.addClass("col-sm-offset-" + scope.offset);
+                    element.addClass("col-md-offset-" + scope.offset);
+                    element.addClass("col-lg-offset-" + scope.offset);
+                }
+            });
         }
     }
 };
 
 qitcommonsModule.directive("qDualFormGroupView", function () {
-    return qDualFormGroupItem('<div ng-if="!editMode" ng-class="styles"><p class="form-control-static" ng-transclude></p></div>');
+    return qDualFormGroupItem('<div class="q-dual-form-group-view"><p class="form-control-static" ng-transclude></p></div>');
 });
 
 qitcommonsModule.directive("qDualFormGroupEdit", function () {
-    return qDualFormGroupItem('<div ng-if="editMode" ng-class="styles" ng-transclude></div>');
+    return qDualFormGroupItem('<div class="q-dual-form-group-edit" ng-transclude></div>');
 });
 
 qitcommonsModule.directive("qErrorMessage", function () {
