@@ -1,4 +1,4 @@
-package com.qitsoft.messender;
+package com.qitsoft.qitcommons.test;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -14,13 +14,14 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.qitsoft.messender.UnitTestHelper.AnnotationTester;
-import com.qitsoft.messender.UnitTestHelper.ClassTester;
-import com.qitsoft.messender.UnitTestHelper.FieldTester;
-import com.qitsoft.messender.UnitTestHelper.LogTester;
-import com.qitsoft.messender.UnitTestHelper.MethodTester;
+import com.qitsoft.qitcommons.test.UnitTestHelper.AnnotationTester;
+import com.qitsoft.qitcommons.test.UnitTestHelper.ClassTester;
+import com.qitsoft.qitcommons.test.UnitTestHelper.FieldTester;
+import com.qitsoft.qitcommons.test.UnitTestHelper.LogTester;
+import com.qitsoft.qitcommons.test.UnitTestHelper.MethodTester;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.StringDescription;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,10 +29,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
 
-import static com.qitsoft.messender.UnitTestHelper.between;
-import static com.qitsoft.messender.UnitTestHelper.ofSize;
-import static com.qitsoft.messender.UnitTestHelper.test;
-import static com.qitsoft.messender.UnitTestHelper.testLogger;
+import static com.qitsoft.qitcommons.test.UnitTestHelper.between;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -317,7 +315,7 @@ public class UnitTestHelperTest {
 
         Date afterDate = Date.from(LocalDateTime.now().minusSeconds(60 * 60 * 24 * 31 * 12).atZone(ZoneId.systemDefault()).toInstant());
         Date atLeastDate = Date.from(LocalDateTime.now().minusMonths(11).atZone(ZoneId.systemDefault()).toInstant());
-        assertGetSampleValue(Date.class, allOf(between(afterDate, new Date())), lessThan(atLeastDate));
+        assertGetSampleValue(Date.class, Matchers.allOf(UnitTestHelper.between(afterDate, new Date())), lessThan(atLeastDate));
         assertGetSampleValue(NoConstants.class, nullValue(NoConstants.class), nullValue(NoConstants.class));
         assertGetSampleValue(RetentionPolicy.class, notNullValue(RetentionPolicy.class), equalTo(RetentionPolicy.RUNTIME));
         assertGetSampleValue(UUID.class, notNullValue(UUID.class), notNullValue(UUID.class));
@@ -360,7 +358,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testTest() {
-        ClassTester result = test(SimplePojo.class);
+        ClassTester result = UnitTestHelper.test(SimplePojo.class);
         assertThat(result, notNullValue());
         assertThat(result, instanceOf(ClassTester.class));
     }
@@ -371,7 +369,7 @@ public class UnitTestHelperTest {
         Date before = Date.from(now.minusMinutes(1).toInstant(ZoneOffset.UTC));
         Date after = Date.from(now.minusSeconds(1).toInstant(ZoneOffset.UTC));
 
-        Matcher<Date> matcher = between(before, after);
+        Matcher<Date> matcher = UnitTestHelper.between(before, after);
 
         assertThat(matcher.matches(Date.from(now.toInstant(ZoneOffset.UTC))), equalTo(false));
         assertThat(matcher.matches(after), equalTo(true));
@@ -386,7 +384,7 @@ public class UnitTestHelperTest {
         Date before = Date.from(now.minusMinutes(1).toInstant(ZoneOffset.UTC));
         Date after = Date.from(now.minusSeconds(1).toInstant(ZoneOffset.UTC));
 
-        Matcher<Date> matcher = between(before, after);
+        Matcher<Date> matcher = UnitTestHelper.between(before, after);
         matcher.matches(Date.from(now.toInstant(ZoneOffset.UTC)));
         Description description = new StringDescription();
         matcher.describeTo(description);
@@ -400,7 +398,7 @@ public class UnitTestHelperTest {
         Instant before = now.minusMinutes(1).toInstant(ZoneOffset.UTC);
         Instant after = now.minusSeconds(1).toInstant(ZoneOffset.UTC);
 
-        Matcher<Date> matcher = between(before, after);
+        Matcher<Date> matcher = UnitTestHelper.between(before, after);
 
         assertThat(matcher.matches(Date.from(now.toInstant(ZoneOffset.UTC))), equalTo(false));
         assertThat(matcher.matches(Date.from(after)), equalTo(true));
@@ -415,7 +413,7 @@ public class UnitTestHelperTest {
         Instant before = now.minusMinutes(1).toInstant(ZoneOffset.UTC);
         Instant after = now.minusSeconds(1).toInstant(ZoneOffset.UTC);
 
-        Matcher<Date> matcher = between(before, after);
+        Matcher<Date> matcher = UnitTestHelper.between(before, after);
         matcher.matches(Date.from(now.toInstant(ZoneOffset.UTC)));
         Description description = new StringDescription();
         matcher.describeTo(description);
@@ -425,7 +423,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testOfSize() {
-        Matcher<Collection> matcher = ofSize(3);
+        Matcher<Collection> matcher = UnitTestHelper.ofSize(3);
 
         assertThat(matcher.matches(Arrays.asList("a", "b", "c")), equalTo(true));
         assertThat(matcher.matches(Arrays.asList("a", "b")), equalTo(false));
@@ -500,7 +498,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAssertAnnotated() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("getIntProp");
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("getIntProp");
 
         assertThat(methodTester.assertAnnotated(SampleAnnotation.class), sameInstance(methodTester));
         assertThat(methodTester.assertAnnotated(SampleAnnotation.class, AnotherSampleAnnotation.class), sameInstance(methodTester));
@@ -524,7 +522,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAssertParamAnnotated() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("setUuidProp", UUID.class);
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("setUuidProp", UUID.class);
 
         assertThat(methodTester.assertParamAnnotated(0, SampleAnnotation.class), sameInstance(methodTester));
         assertThat(methodTester.assertParamAnnotated(0, SampleAnnotation.class, AnotherSampleAnnotation.class), sameInstance(methodTester));
@@ -548,7 +546,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAssertParamAnnotatedOnIndex1() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("annotatedMethod", String.class, String.class);
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class);
 
         assertThat(methodTester.assertParamAnnotated(1, SampleAnnotation.class), sameInstance(methodTester));
         assertThat(methodTester.assertParamAnnotated(1, SampleAnnotation.class, AnotherSampleAnnotation.class), sameInstance(methodTester));
@@ -572,7 +570,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAssertMethodOrClassAnnotatedOnMethod() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("getIntProp");
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("getIntProp");
 
         assertThat(methodTester.assertMethodOrClassAnnotated(SampleAnnotation.class), sameInstance(methodTester));
         assertThat(methodTester.assertMethodOrClassAnnotated(ThirdSampleAnnotation.class), sameInstance(methodTester));
@@ -588,7 +586,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAssertMethodOrClassAnnotatedOnClass() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("getLongProp");
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("getLongProp");
 
         assertThat(methodTester.assertMethodOrClassAnnotated(SampleAnnotation.class), sameInstance(methodTester));
 
@@ -603,7 +601,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterThrowException() throws NoSuchMethodException {
-        MethodTester methodTester = test(SimplePojo.class).method("annotatedMethod", String.class, String.class);
+        MethodTester methodTester = UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class);
 
         assertThat(methodTester.throwsException(IOException.class), sameInstance(methodTester));
         assertThat(methodTester.throwsException(IOException.class, NumberFormatException.class), sameInstance(methodTester));
@@ -626,20 +624,20 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterParamAnnotation() throws NoSuchMethodException {
-        assertThat(test(SimplePojo.class).method("annotatedMethod", String.class, String.class)
+        assertThat(UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class)
                 .paramAnnotation(0, ThirdSampleAnnotation.class), allOf(notNullValue(), instanceOf(AnnotationTester.class)));
-        assertThat(test(SimplePojo.class).method("annotatedMethod", String.class, String.class)
+        assertThat(UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class)
                 .paramAnnotation(1, SampleAnnotation.class), allOf(notNullValue(), instanceOf(AnnotationTester.class)));
 
         try {
-            test(SimplePojo.class).method("annotatedMethod", String.class, String.class).paramAnnotation(0, SampleAnnotation.class);
+            UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class).paramAnnotation(0, SampleAnnotation.class);
             fail();
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo(MessageFormat.format("The method''s {0} parameter 0 is not annotated with {1}.",
                     SimplePojo.class.getMethod("annotatedMethod", String.class, String.class).toString(), SampleAnnotation.class.getName())));
         }
         try {
-            test(SimplePojo.class).method("annotatedMethod", String.class, String.class).paramAnnotation(1, ThirdSampleAnnotation.class);
+            UnitTestHelper.test(SimplePojo.class).method("annotatedMethod", String.class, String.class).paramAnnotation(1, ThirdSampleAnnotation.class);
             fail();
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo(MessageFormat.format("The method''s {0} parameter 1 is not annotated with {1}.",
@@ -649,11 +647,11 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAnnotation() throws NoSuchMethodException {
-        assertThat(test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class),
+        assertThat(UnitTestHelper.test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class),
                 allOf(notNullValue(), instanceOf(AnnotationTester.class)));
 
         try {
-            test(SimplePojo.class).method("getIntProp").annotation(Retention.class);
+            UnitTestHelper.test(SimplePojo.class).method("getIntProp").annotation(Retention.class);
             fail();
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo(MessageFormat.format("The method {0} is not annotated with {1}.",
@@ -663,18 +661,18 @@ public class UnitTestHelperTest {
 
     @Test
     public void testMethodTesterAnd() throws NoSuchMethodException {
-        ClassTester classTester = test(SimplePojo.class);
+        ClassTester classTester = UnitTestHelper.test(SimplePojo.class);
         assertThat(classTester.method("getIntProp").and(), sameInstance(classTester));
     }
 
     @Test
     public void testMethodTesterGetDesciption() throws NoSuchMethodException {
-        assertThat(test(SimplePojo.class).method("getIntProp").getDescription(), equalTo("method " + SimplePojo.class.getMethod("getIntProp").toString()));
+        assertThat(UnitTestHelper.test(SimplePojo.class).method("getIntProp").getDescription(), equalTo("method " + SimplePojo.class.getMethod("getIntProp").toString()));
     }
 
     @Test
     public void testFieldTesterAssertAnnotated() throws NoSuchFieldException {
-        FieldTester fieldTester = test(SimplePojo.class).field("intProp");
+        FieldTester fieldTester = UnitTestHelper.test(SimplePojo.class).field("intProp");
 
         assertThat(fieldTester.assertAnnotated(SampleAnnotation.class), sameInstance(fieldTester));
         assertThat(fieldTester.assertAnnotated(SampleAnnotation.class, AnotherSampleAnnotation.class), sameInstance(fieldTester));
@@ -698,7 +696,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testFieldTesterAnnotation() throws NoSuchFieldException {
-        FieldTester fieldTester = test(SimplePojo.class).field("intProp");
+        FieldTester fieldTester = UnitTestHelper.test(SimplePojo.class).field("intProp");
 
         assertThat(fieldTester.annotation(SampleAnnotation.class), allOf(notNullValue(), instanceOf(AnnotationTester.class)));
 
@@ -713,7 +711,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testFieldTesterAnd() {
-        ClassTester classTester = test(SimplePojo.class);
+        ClassTester classTester = UnitTestHelper.test(SimplePojo.class);
         FieldTester fieldTester = classTester.field("intProp");
 
         assertThat(fieldTester.and(), allOf(notNullValue(), sameInstance(classTester)));
@@ -721,20 +719,20 @@ public class UnitTestHelperTest {
 
     @Test
     public void testFieldTesterGetDescription() throws NoSuchFieldException {
-        FieldTester fieldTester = test(SimplePojo.class).field("intProp");
+        FieldTester fieldTester = UnitTestHelper.test(SimplePojo.class).field("intProp");
 
         assertThat(fieldTester.getDescription(), equalTo("field " + SimplePojo.class.getDeclaredField("intProp").toString()));
     }
 
     @Test
     public void testAnnotationTesterAnd() {
-        FieldTester fieldTester = test(SimplePojo.class).field("intProp");
+        FieldTester fieldTester = UnitTestHelper.test(SimplePojo.class).field("intProp");
         assertThat(fieldTester.annotation(SampleAnnotation.class).and(), sameInstance(fieldTester));
     }
 
     @Test
     public void testAnnotationTesterThatForField() throws Exception {
-        AnnotationTester<FieldTester, SampleAnnotation> annotationTester = test(SimplePojo.class).field("intProp").annotation(SampleAnnotation.class);
+        AnnotationTester<FieldTester, SampleAnnotation> annotationTester = UnitTestHelper.test(SimplePojo.class).field("intProp").annotation(SampleAnnotation.class);
 
         assertThat(annotationTester.that("value", equalTo("the-int")), allOf(notNullValue(), sameInstance(annotationTester)));
 
@@ -755,7 +753,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testAnnotationTesterThatForMethod() throws Exception {
-        AnnotationTester<MethodTester, SampleAnnotation> annotationTester = test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class);
+        AnnotationTester<MethodTester, SampleAnnotation> annotationTester = UnitTestHelper.test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class);
 
         assertThat(annotationTester.that("value", equalTo("the-int")), allOf(notNullValue(), sameInstance(annotationTester)));
 
@@ -776,7 +774,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testAnnotationTesterThatWithLambdaForField() throws Exception {
-        AnnotationTester<FieldTester, SampleAnnotation> annotationTester = test(SimplePojo.class).field("intProp").annotation(SampleAnnotation.class);
+        AnnotationTester<FieldTester, SampleAnnotation> annotationTester = UnitTestHelper.test(SimplePojo.class).field("intProp").annotation(SampleAnnotation.class);
 
         assertThat(annotationTester.that(SampleAnnotation::value, equalTo("the-int")), allOf(notNullValue(), sameInstance(annotationTester)));
 
@@ -791,7 +789,7 @@ public class UnitTestHelperTest {
 
     @Test
     public void testAnnotationTesterThatWithLambdaForMethod() throws Exception {
-        AnnotationTester<MethodTester, SampleAnnotation> annotationTester = test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class);
+        AnnotationTester<MethodTester, SampleAnnotation> annotationTester = UnitTestHelper.test(SimplePojo.class).method("getIntProp").annotation(SampleAnnotation.class);
 
         assertThat(annotationTester.that(SampleAnnotation::value, equalTo("the-int")), allOf(notNullValue(), sameInstance(annotationTester)));
 
@@ -807,7 +805,7 @@ public class UnitTestHelperTest {
     @Test
     public void testLogTester() {
         Logger logger = Logger.getLogger("abracadabra");
-        LogTester logTester = testLogger("abracadabra");
+        LogTester logTester = UnitTestHelper.testLogger("abracadabra");
 
         logger.info("the sample message");
 

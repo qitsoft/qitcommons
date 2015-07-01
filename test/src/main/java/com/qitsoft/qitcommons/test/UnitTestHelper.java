@@ -1,4 +1,4 @@
-package com.qitsoft.messender;
+package com.qitsoft.qitcommons.test;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;

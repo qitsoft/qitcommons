@@ -1,4 +1,4 @@
-package com.qitsoft.messender;
+package com.qitsoft.qitcommons.test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

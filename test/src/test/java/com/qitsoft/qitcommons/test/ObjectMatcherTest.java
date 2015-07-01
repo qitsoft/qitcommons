@@ -1,4 +1,4 @@
-package com.qitsoft.messender;
+package com.qitsoft.qitcommons.test;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import static com.qitsoft.messender.ObjectMatcher.objectMatcher;
+import static com.qitsoft.qitcommons.test.ObjectMatcher.objectMatcher;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
