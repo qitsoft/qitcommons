@@ -72,7 +72,7 @@ describe("Test q-error-message directive.", function () {
     describe("Listens for validity status.", function () {
         var $input, $message;
         beforeEach(function() {
-            var form = $compile('<form name="fName"><input name="firstName" ng-model="fname" required pattern="/dd/"/><q-error-message for="firstName" error="required"/></form>')($rootScope);
+            var form = $compile('<form name="fName"><input name="firstName" ng-model="fname" required ng-pattern="/dd/"/><q-error-message for="firstName" error="required"/></form>')($rootScope);
             $rootScope.$digest();
             $input = form.find("input");
             $message = form.find("span.help-block");
@@ -85,6 +85,7 @@ describe("Test q-error-message directive.", function () {
         it("Fades out for invalid input which becomes valid.", function() {
             expect($.fn.fadeIn).toHaveBeenCalled();
             $rootScope.fName.firstName.$setViewValue("dd");
+            $rootScope.$digest();
             expect($.fn.fadeOut).toHaveBeenCalled();
         });
 
@@ -95,20 +96,24 @@ describe("Test q-error-message directive.", function () {
 
         it("Becomes hidden on value change.", function() {
             $rootScope.fName.firstName.$setViewValue("dd");
+            $rootScope.$digest();
 
             expect($.fn.fadeOut).toHaveBeenCalled();
         });
 
         it("Becomes invalid and dirty on value change.", function() {
             $rootScope.fName.firstName.$setViewValue("dd");
+            $rootScope.$digest();
             $rootScope.fName.firstName.$setViewValue("");
+            $rootScope.$digest();
 
             expect(classes()).toContain("ng-dirty");
             expect(classes()).toContain("ng-invalid");
         });
 
         it("Becomes hidden on value change even if input is still invalid.", function() {
-            $rootScope.fName.firstName.$setViewValue("dd2232323");
+            $rootScope.fName.firstName.$setViewValue("dx2232323");
+            $rootScope.$digest();
 
             expect($rootScope.fName.firstName.$error.pattern).toBe(true);
             expect($.fn.fadeOut).toHaveBeenCalled();
@@ -123,6 +128,7 @@ describe("Test q-error-message directive.", function () {
 
         it("Becomes pristine on method call.", function() {
             $rootScope.fName.firstName.$setViewValue("dd");
+            $rootScope.$digest();
             expect(classes()).toContain("ng-dirty");
 
             $rootScope.fName.firstName.$setPristine();

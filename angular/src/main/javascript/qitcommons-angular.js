@@ -333,11 +333,11 @@ qitcommonsModule.directive("qErrorMessage", function () {
         },
         template: '<span class="q-error-message help-block" ng-transclude></span>',
         link: function (scope, element, attrs, ctrl) {
-            if (!attrs.for) {
+            if (!attrs['for']) {
                 throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
             }
-            if (!ctrl[attrs.for]) {
-                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs.for + "'.");
+            if (!ctrl[attrs['for']]) {
+                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs['for'] + "'.");
             }
             if (!attrs.error) {
                 throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'error' attribute specified.");
@@ -384,11 +384,11 @@ qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
         },
         template: '<label class="q-label control-label" ng-transclude></label>',
         link: function (scope, element, attrs, ctrl) {
-            if (!attrs.for) {
+            if (!attrs['for']) {
                 throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
             }
-            if (!ctrl[attrs.for]) {
-                throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs.for + "'.");
+            if (!ctrl[attrs['for']]) {
+                throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs['for'] + "'.");
             }
             scope.$watch("disabled", function (value) {
                 if ($qUtils.bool(value, false)) {
