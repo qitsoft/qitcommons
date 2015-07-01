@@ -11,6 +11,7 @@
         <module>test</module>
         <module>angular</module>
         <module>model</module>
+        <module>dao</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -43,6 +44,11 @@
             <dependency>
                 <groupId>com.qitsoft.qitcommons</groupId>
                 <artifactId>qitcommons-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.qitsoft.qitcommons</groupId>
+                <artifactId>qitcommons-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -1,21 +1,19 @@
 package com.qitsoft.qitcommons.model;
 
-import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "config")
-public class ConfigEntity {
+public class ConfigEntity extends AbstractEntity<String> {
 
     @Id
     private String key;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Version
-    @Column(nullable = false)
-    private Date modifiedDate;
 
     @Column(length = 4000)
     private String value;
@@ -32,12 +30,14 @@ public class ConfigEntity {
         this.key = key;
     }
 
-    public Date getModifiedDate() {
-        return modifiedDate;
+    @Override
+    public String getId() {
+        return getKey();
     }
 
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
+    @Override
+    public void setId(String id) {
+        setKey(id);
     }
 
     public String getValue() {

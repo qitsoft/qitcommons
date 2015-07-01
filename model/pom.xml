@@ -69,6 +69,7 @@
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
                     <excludedClasses>
+                        <excludedClass>com.qitsoft.qitcommons.model.QAbstractEntity</excludedClass>
                         <excludedClass>com.qitsoft.qitcommons.model.QAbstractIntEntity</excludedClass>
                         <excludedClass>com.qitsoft.qitcommons.model.QAbstractUuidEntity</excludedClass>
                         <excludedClass>com.qitsoft.qitcommons.model.QConfigEntity</excludedClass>
