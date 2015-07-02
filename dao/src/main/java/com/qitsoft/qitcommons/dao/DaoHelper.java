@@ -79,4 +79,11 @@ public class DaoHelper<T extends AbstractEntity> {
         return (T) session().get(entityType, id);
     }
 
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 }
