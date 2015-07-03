@@ -14,6 +14,7 @@ import com.mysema.query.types.path.EntityPathBase;
 import com.mysema.query.types.path.StringPath;
 import com.qitsoft.qitcommons.model.AbstractEntity;
 import com.qitsoft.qitcommons.model.AbstractUuidEntity;
+import com.qitsoft.qitcommons.test.UnitTestHelper;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
@@ -205,5 +206,13 @@ public class DaoHelperTest {
         verify(expression).like(eq("%b%"));
         verify(expressions[0]).and(eq(expressions[1]));
         verify(daoHelper).mergeFields(eq(expression1), eq(expression2));
+    }
+
+    @Test
+    public void testProperties() throws Exception {
+        SessionFactory sessionFactory = UnitTestHelper.getSampleValue(SessionFactory.class);
+        daoHelper.setSessionFactory(sessionFactory);
+
+        assertThat(daoHelper.getSessionFactory(), sameInstance(sessionFactory));
     }
 }
