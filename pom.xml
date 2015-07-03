@@ -16,12 +16,41 @@
     </modules>
     <packaging>pom</packaging>
 
+    <scm>
+        <connection>scm:git:ssh://git@github.com:qitsoft/qitcommons.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:qitsoft/qitcommons.git</developerConnection>
+        <url>https://github.com/qitsoft/qitcommons.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <repositories>
         <repository>
-            <id>google-api-services</id>
-            <url>http://google-api-client-libraries.appspot.com/mavenrepo</url>
+            <id>qitsoft-releases</id>
+            <url>http://nexus.qitsoft.com/content/repositories/releases/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>qitsoft-releases</id>
+            <name>Qitsoft Releases</name>
+            <url>http://nexus.qitsoft.com/content/repositories/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+            <id>qitsoft-snapshots</id>
+            <name>Qitsoft Snapshots</name>
+            <url>http://nexus.qitsoft.com/content/repositories/snapshots/</url>
+            <layout>default</layout>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -103,9 +132,21 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.1</version>
+                <configuration>
+                    <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <tagNameFormat>release-@{version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>1.9.4</version>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -123,6 +164,17 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>central</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven-central-releases</id>
+                    <name>Qitsoft Releases</name>
+                    <url>https://oss.sonatype.org/content/repositories/releases/</url>
+                    <layout>default</layout>
+                </repository>
+            </distributionManagement>
+        </profile>
         <profile>
             <id>coverage</id>
             <build>
