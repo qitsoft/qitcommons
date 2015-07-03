@@ -12,6 +12,7 @@
         <module>angular</module>
         <module>model</module>
         <module>dao</module>
+        <module>dao-test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -230,6 +231,16 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-nop</artifactId>
+                <version>1.7.12</version>
             </dependency>
 
             <dependency>

@@ -1,0 +1,4 @@
+<dataset>
+    <test id="1" name="Vasya" age="28" />
+    <test id="2" name="Petya" age="23" />
+</dataset>
