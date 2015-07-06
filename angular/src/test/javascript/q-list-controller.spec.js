@@ -18,12 +18,8 @@ describe("Test $qListController service.", function () {
         $scope = $rootScope.$new();
         $serviceResult = {"service": "test"};
         $service = jasmine.createSpy("$service").and.returnValue($serviceResult);
-        $successCallback = jasmine.createSpy("$successCallback");
-        $errorCallback = jasmine.createSpy("$errorCallback");
         $config = {
-            service: $service,
-            success: $successCallback,
-            error: $errorCallback
+            service: $service
         }
         $locationSearch = {};
         spyOn($location, "search").and.returnValue($locationSearch);
@@ -38,14 +34,6 @@ describe("Test $qListController service.", function () {
         expect(params.query).toBeUndefined();
         expect(params.page).toEqual(1);
         expect(params.pageSize).toEqual(10);
-    });
-
-    it("Passes success and error callbacks.", function () {
-        $qListController($scope, $config);
-
-        expect($service).toHaveBeenCalled();
-        expect($service.calls.argsFor(0)[1]).toBe($successCallback);
-        expect($service.calls.argsFor(0)[2]).toBe($errorCallback);
     });
 
     it("Requests the page from config.", function () {
@@ -160,7 +148,7 @@ describe("Test $qListController service.", function () {
     });
 
     it("Typing with unsing delay from config.", function() {
-        $config.typingTimeout = 2000;
+        $config.filterTimeout = 2000;
         $qListController($scope, $config);
         $location.search.calls.reset();
         spyOn($scope, "filter");

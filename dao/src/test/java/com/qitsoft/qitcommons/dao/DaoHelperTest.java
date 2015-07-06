@@ -158,7 +158,7 @@ public class DaoHelperTest {
         when(expressions[0].concat(eq(path2))).thenReturn(expressions[1]);
         when(expressions[1].toLowerCase()).thenReturn(expressions[2]);
 
-        StringExpression expression = daoHelper.mergeFields(path1, path2);
+        StringExpression expression = daoHelper.concat(path1, path2);
 
         assertThat(expression, sameInstance(expressions[2]));
 
@@ -175,7 +175,7 @@ public class DaoHelperTest {
 
         when(path.toLowerCase()).thenReturn(returnExpression);
 
-        StringExpression expression = daoHelper.mergeFields(path);
+        StringExpression expression = daoHelper.concat(path);
 
         assertThat(expression, sameInstance(returnExpression));
 
@@ -188,7 +188,7 @@ public class DaoHelperTest {
         StringExpression expression2 = mock(StringExpression.class);
         StringExpression expression = mock(StringExpression.class);
 
-        doReturn(expression).when(daoHelper).mergeFields(eq(expression1), eq(expression2));
+        doReturn(expression).when(daoHelper).concat(eq(expression1), eq(expression2));
 
         BooleanExpression[] expressions = new BooleanExpression[]{
                 mock(BooleanExpression.class),
@@ -205,7 +205,7 @@ public class DaoHelperTest {
         verify(expression).like(eq("%a%"));
         verify(expression).like(eq("%b%"));
         verify(expressions[0]).and(eq(expressions[1]));
-        verify(daoHelper).mergeFields(eq(expression1), eq(expression2));
+        verify(daoHelper).concat(eq(expression1), eq(expression2));
     }
 
     @Test

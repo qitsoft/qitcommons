@@ -1,9 +1,64 @@
+/**
+ * Copyright 2015 Qitsoft and Sergey Soloviov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * The qitcommons moule with common directives and services for angular.
+ * @type {module}
+ */
 var qitcommonsModule = angular.module("qitcommonsModule", []);
 
+/**
+ * Service used to build a common controller for listings. It allows invoking the remote services, tracking pages
+ * and filtering by criteria. To be able to use this service inject it into your controller and in the body of
+ * controller function invoke it passing the controller's scope and configuratio:
+ * <code><pre>
+ *     yourmodule.controller("YourController", function($scope, $qListController) {
+ *          $qListController($scope, {
+ *              page: 1,
+ *              pageSize: 10,
+ *              service: function(params) {
+ *                  return ["a", "b"];
+ *              },
+ *              filter: "#query",
+ *              filterTimeout: 500
+ *          });
+ *     });
+ * </pre></code>
+ *
+ * Parameters:
+ *     scope - The object (scope) where will be set the properties like "page", "pageSize", "list" and "query".
+ *     config - the configuration of the list controller. It is an object which can have the following properties:
+ *              page            - the current page. If this property is ommited, the current page is got from location
+ *                              query parameter "p". Otherwise it will set to 1.
+ *              pageSize        - the page size of the returned data. This parameter do not truncates the returned list.
+ *                              By default it is equal to 10.
+ *              filter          - the jQuery selector or element of the input element which acts as filter.
+ *              filterTimeout   - the timeout used to invoke service during typing the filter in the filter element.
+ *              service         - the function used to retrieve the data. This function accepts one parameter which
+ *                              is an object where property "query" contains the value of the passed filter value from
+ *                              location query parameter "q", "page" - the current page, "pageSize" - the page size.
+ *
+ * The scope also will have the following methods:
+ *      clearFilter             - clears the filter
+ *      typingFilter(query)     - invokes while the user enters the query to dynamically retrieves the results.
+ *      filter(query)           - filters the data by query.
+ */
 qitcommonsModule.service("$qListController", ["$location", "$timeout", function ($location, $timeout) {
     return function(scope, config) {
         this.queryTimer = undefined;
-        var filterName = (config.name + "Filter");
 
         scope.page = config.page;
         if (!angular.isNumber(scope.page)) {
@@ -16,8 +71,7 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
         scope.pageSize = config.pageSize || 10;
         scope.query = $location.search().q;
         var listParams = {query: scope.query, page: scope.page, pageSize: scope.pageSize};
-        listParams = angular.extend(listParams, config.params);
-        scope.list = config.service(listParams, config.success, config.error);
+        scope.list = config.service(listParams);
 
         if (config.filter) {
             if (typeof config.filter == "string") {
@@ -37,7 +91,7 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
             $timeout.cancel(this.queryTimer);
             this.queryTimer = $timeout(function () {
                 scope.filter(query);
-            }, config.typingTimeout || 1000);
+            }, config.filterTimeout || 1000);
         };
 
         scope.filter = function (query) {
@@ -58,6 +112,25 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
     }
 }]);
 
+/**
+ * Directive adding pager to the page. This directive adds elements to DOM and can be declared only as element. It has
+ * the following attributes:
+ *  items       - the value of total items in the list for which this pages relates. This attribute is optional and can be
+ *              replaced with the "total" attribute.
+ *  pageSize    - the attribute to declare the page size for calculating total pages to show. This attribute goes only
+ *              together with "items" attribute. If this attribute is ommited but "items" is declared the exception is
+ *              raised.
+ *  total       - the number of total pages. It is optional and can be replaced with "items" attribute.
+ *  page        - the current page. If it is ommited the current page is obtained from location query parameter "p",
+ *              otherwise it is considered to be equal to "1".
+ *  change      - the reference to function invoked on page change. If it is ommited the default behaviour is occurred.
+ *              This means that the location will be changed. The location "p" query parameter will be set to the new
+ *              page value. If the page is equal to "1" the "p" location query parameter will be removed.
+ *              The change function can accept the following parameters:
+ *                  $page       - the new page value,
+ *                  $oldPage    - the old page value.
+ *
+ */
 qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location) {
     return {
         restrict: "E",
@@ -175,6 +248,22 @@ qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location
     }
 }]);
 
+/**
+ * The complex directive aimed to construct the view and edit pages. This directive can be declared only as element.
+ * It adds the ng-form inside which you can add your form controls. The form has the name declared by "name" attribute,
+ * otherwise will be generated unique form name. The logic to switch the presentation from view mode to edit mode is
+ * do by "editMode" attribute. By default the directive is in view mode. The attribute "showLabel" allows setting if the
+ * label declared by attribute "label" will be shown. If the label is not declared at all or it will not be shown the
+ * offset in 2 columns will be persisted.
+ * This directive accepts inside it to place only two other elements: "dual-form-group-view" and "dual-form-group-edit".
+ * Each of them denotes the type of presentation (for view mode or for edit mode).
+ *
+ * Attributes:
+ *      name        - the name of nested form.
+ *      editMode    - specifies the current state of this element. By default is false.
+ *      showLabel   - specifies if the label should be shown. By default is false.
+ *      label       - the label to show.
+ */
 qitcommonsModule.directive("qDualFormGroup", ["$qUtils", function ($qUtils) {
     return {
         restrict: "E",
@@ -276,7 +365,7 @@ qitcommonsModule.directive("qDualFormGroup", ["$qUtils", function ($qUtils) {
     }
 }]);
 
-var qDualFormGroupItem = function (template, type) {
+var qDualFormGroupItem = function (template) {
     return {
         require: "^qDualFormGroup",
         restrict: "E",
@@ -313,14 +402,34 @@ var qDualFormGroupItem = function (template, type) {
     }
 };
 
+/**
+ * The element used in qDualFormGroup to show the view state. It is shown only when editMode of qDualFormGroup is false
+ * or at all ommited.
+ * Attributes:
+ *  offset  - the offset to the left. It is the number from 1 to 12 in bootstrap columns.
+ *  width   - the width of the field. It is the number from 1 to 12 in bootstrap columns.
+ */
 qitcommonsModule.directive("qDualFormGroupView", function () {
     return qDualFormGroupItem('<div class="q-dual-form-group-view"><p class="form-control-static" ng-transclude></p></div>');
 });
 
+/**
+ * The element used in qDualFormGroup to show the edit state. It is shown only when editMode of qDualFormGroup is true.
+ * Attributes:
+ *  offset  - the offset to the left. It is the number from 1 to 12 in bootstrap columns.
+ *  width   - the width of the field. It is the number from 1 to 12 in bootstrap columns.
+ */
 qitcommonsModule.directive("qDualFormGroupEdit", function () {
     return qDualFormGroupItem('<div class="q-dual-form-group-edit" ng-transclude></div>');
 });
 
+/**
+ * The directive-element to show error message.
+ * Attributes:
+ *      for     - the name of element for which to show the error.
+ *      error   - the error for which this message has description.
+ * In the body you specify the text to show on the specific error.
+ */
 qitcommonsModule.directive("qErrorMessage", function () {
     return {
         require: "^form",
@@ -371,6 +480,16 @@ qitcommonsModule.directive("qErrorMessage", function () {
     };
 });
 
+/**
+ * The directive-element that shows the label coloreed depending on the validation state. If the input control is in
+ * dirty and invalid state then the label will be colored in red (as regular inputs).
+ * Attributes:
+ *      for         - the name of input for which this label refers.
+ *      disabled    - the disable dstate of the input.
+ *      class       - the additional classes to apply to the input.
+ *
+ * The body of the input is the label itself.
+ */
 qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
     return {
         require: "^form",
@@ -421,6 +540,18 @@ qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
     };
 }]);
 
+/**
+ * Service that shows the alert. It has the following methods:
+ *      success     - show success message.
+ *      info        - show info message.
+ *      warning     - show warging message.
+ *      danger      - show error/danger message.
+ *
+ * Each method accepts the following arguments:
+ *      message     - the message to show
+ *      params      - the varargs list of parameters to replace placeholders in the message.
+ *      timeout     - the last argument of type number which denotes the time until the message will be hidden.
+ */
 qitcommonsModule.service("$qAlert", ["$timeout", function ($timeout) {
 
     var show = function (args, type) {
@@ -469,6 +600,11 @@ qitcommonsModule.service("$qAlert", ["$timeout", function ($timeout) {
     };
 }]);
 
+/**
+ * The directive-attribute to show magnific popup (http://dimsemenov.com/plugins/magnific-popup/). The options for
+ * popup could be set by attributes starting with "qMagnificPopup", eg. the "type" option should be set by attribute
+ * "qMagnifigPopupType", or "gallery.enabled" option sets by "qMagnificPopupGalleryEnabled".
+ */
 qitcommonsModule.directive('qMagnificPopup', function () {
     var expectedOptions = function () {
         var $string = function (value) {
@@ -613,6 +749,12 @@ qitcommonsModule.directive('qMagnificPopup', function () {
     }
 });
 
+/**
+ * The service with utils.
+ *      bool        - transforms the value to bool. If string is "y", "1", "on", "yes", "true" - is true. If the value is
+ *                  undefined then will tes to default value.
+ *      uuid        - generates UUID.
+ */
 qitcommonsModule.service("$qUtils", function () {
     return {
         bool: function (value, def) {

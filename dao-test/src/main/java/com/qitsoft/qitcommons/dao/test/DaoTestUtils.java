@@ -8,8 +8,16 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
+/**
+ * Dao test utility methods.
+ */
 public class DaoTestUtils {
 
+    /**
+     * Matcher for UUID entity (AbstractUuidEntity) with passed id.
+     * @param id the id of the expected entity.
+     * @return the matcher to check for id.
+     */
     public static Matcher<? super AbstractUuidEntity> withId(String id) {
         return new BaseMatcher<AbstractUuidEntity>() {
             @Override
@@ -25,6 +33,11 @@ public class DaoTestUtils {
         };
     }
 
+    /**
+     * Matcher for UUID entity (AbstractUuidEntity) with passed id.
+     * @param id the id of the expected entity.
+     * @return the matcher to check for id.
+     */
     public static Matcher<? super AbstractUuidEntity> withId(UUID id) {
         return new BaseMatcher<AbstractUuidEntity>() {
             @Override
@@ -40,6 +53,11 @@ public class DaoTestUtils {
         };
     }
 
+    /**
+     * Matcher for integer entity (AbstractIntEntity) with passed id.
+     * @param id the id of the expected entity.
+     * @return the matcher to check for id.
+     */
     public static Matcher<? super AbstractIntEntity> withId(long id) {
         return new BaseMatcher<AbstractIntEntity>() {
             @Override
