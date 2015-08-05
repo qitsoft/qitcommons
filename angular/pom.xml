@@ -55,7 +55,7 @@
                 <version>1.7.4</version>
                 <configuration>
                     <charset>UTF-8</charset>
-                    <closureCompilationLevel>ADVANCED_OPTIMIZATIONS</closureCompilationLevel>
+                    <closureCompilationLevel>SIMPLE_OPTIMIZATIONS</closureCompilationLevel>
                     <closureCreateSourceMap>true</closureCreateSourceMap>
                     <jsEngine>CLOSURE</jsEngine>
                     <jsTargetDir>${destDir}</jsTargetDir>
@@ -94,6 +94,12 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <skipSource>true</skipSource>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.searls</groupId>
@@ -155,6 +161,9 @@
                 <excludes>
                     <exclude>*</exclude>
                 </excludes>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/generated-resources</directory>
             </resource>
         </resources>
     </build>

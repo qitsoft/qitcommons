@@ -84,6 +84,14 @@ describe("Test $qListController service.", function () {
         expect($scope.list).toBe($serviceResult);
     });
 
+    it("Returns result from service and sets to scope by name.", function () {
+        $config.name = "data";
+        $qListController($scope, $config);
+
+        expect($scope.data).toBe($serviceResult);
+        expect($scope.list).toBeUndefined();
+    });
+
     it("Uses pageSize config property.", function () {
         $config.pageSize = 20;
 

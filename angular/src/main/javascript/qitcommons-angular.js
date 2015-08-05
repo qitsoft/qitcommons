@@ -71,7 +71,9 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
         scope.pageSize = config.pageSize || 10;
         scope.query = $location.search().q;
         var listParams = {query: scope.query, page: scope.page, pageSize: scope.pageSize};
-        scope.list = config.service(listParams);
+
+        var name = config.name || "list";
+        scope[name] = config.service(listParams);
 
         if (config.filter) {
             if (typeof config.filter == "string") {
@@ -131,7 +133,7 @@ qitcommonsModule.service("$qListController", ["$location", "$timeout", function 
  *                  $oldPage    - the old page value.
  *
  */
-qitcommonsModule.directive("qPager", ["$location", "$parse", function ($location) {
+qitcommonsModule.directive("qPager", ["$location", function ($location) {
     return {
         restrict: "E",
         replace: true,

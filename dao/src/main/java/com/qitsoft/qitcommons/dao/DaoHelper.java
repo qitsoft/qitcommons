@@ -13,14 +13,16 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.expr.BooleanExpression;
 import com.mysema.query.types.expr.StringExpression;
 import com.qitsoft.qitcommons.model.AbstractEntity;
+import com.qitsoft.qitcommons.model.SearchFilter;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
  * The helper for dao classes.
- * @param <T> the base entity class.
  */
-public class DaoHelper<T extends AbstractEntity> {
+public class DaoHelper {
+
+    private static final int PAGE_SIZE = 10;
 
     /**
      * The Hibernate session factory.
@@ -30,19 +32,31 @@ public class DaoHelper<T extends AbstractEntity> {
     /**
      * Save the entity.
      * @param obj the entity to save.
+     * @param <T> the entity class.
      * @return the saved entity.
      */
     @SuppressWarnings("unchecked")
-    public T save(T obj) {
+    public <T extends AbstractEntity> T save(T obj) {
         return (T) session().merge(obj);
     }
 
     /**
      * Refreshes the entity.
      * @param obj the entity to refresh.
+     * @param <T> the entity class.
      */
-    public void refresh(T obj) {
+    public <T extends AbstractEntity> void refresh(T obj) {
         session().refresh(obj);
+    }
+
+    public int limit(SearchFilter<?> filter) {
+        return filter.getPageSize() > 0 ? filter.getPageSize() : PAGE_SIZE;
+    }
+
+    public int offset(SearchFilter<?> filter) {
+        int pageSize = limit(filter);
+        int page = filter.getPage() > 0 ? filter.getPage() : 1;
+        return (page - 1) * pageSize;
     }
 
     /**
@@ -113,9 +127,10 @@ public class DaoHelper<T extends AbstractEntity> {
 
     /**
      * Deletes the entity.
+     * @param <T> the entity class.
      * @param obj the entity to delete.
      */
-    public void delete(T obj) {
+    public <T extends AbstractEntity> void delete(T obj) {
         session().delete(obj);
     }
 
@@ -131,10 +146,11 @@ public class DaoHelper<T extends AbstractEntity> {
      * Returns the entity by type and id.
      * @param entityType the entity type.
      * @param id the id of the entity.
+     * @param <T> the entity class.
      * @return the found entity or null.
      */
     @SuppressWarnings("unchecked")
-    public T get(Class<T> entityType, Serializable id) {
+    public <T extends AbstractEntity> T get(Class<T> entityType, Serializable id) {
         return (T) session().get(entityType, id);
     }
 
