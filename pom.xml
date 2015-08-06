@@ -17,8 +17,8 @@
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com:qitsoft/qitcommons.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:qitsoft/qitcommons.git</developerConnection>
+        <connection>scm:git:ssh://git@github.com/qitsoft/qitcommons.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/qitsoft/qitcommons.git</developerConnection>
         <url>https://github.com/qitsoft/qitcommons.git</url>
         <tag>HEAD</tag>
     </scm>
