@@ -362,7 +362,7 @@ qitcommonsModule.directive("qDualFormGroup", ["$qUtils", function ($qUtils) {
 
             $scope.editMode = $qUtils.bool($scope.editMode, false);
         },
-        controller: function ($scope, $element, $attrs, $transclude) {
+        controller: function () {
         }
     }
 }]);
