@@ -543,6 +543,58 @@ qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
 }]);
 
 /**
+ * The panel which allows adding content to the page without adding new outer elements to the DOM.
+ * It has only one attribute: show, which accepts angular expression. If the expression is true then the
+ * content of the panel will be added to the DOM otherwise it will be removed. By defult it is equal to true.
+ */
+qitcommonsModule.directive("qPanel", ["$qUtils", function ($qUtils) {
+    return {
+        restrict: "E",
+        transclude: true,
+        replace: true,
+        scope: {
+            show: "="
+        },
+        template: "",
+        link: function(scope, element, attrs, controller, transclude) {
+            var transcludedScope, transcludedElement;
+            var domPoint = $("<!-- q-panel -->");
+            element.after(domPoint);
+            domPoint.after($("<!-- end q-panel -->"));
+            element.remove();
+
+            var add = function() {
+                if (!transcludedElement) {
+                    transclude(function(clone, scope){
+                        domPoint.after(clone);
+                        transcludedScope = scope;
+                        transcludedElement = clone;
+                    });
+                }
+            };
+            var remove = function() {
+                if (transcludedElement) {
+                    transcludedElement.remove();
+                    transcludedScope.$destroy();
+                    transcludedElement = null;
+                    transcludedScope = null;
+                }
+            };
+            var showOrHide = function(value) {
+                value = $qUtils.bool(value, true);
+                if (value) {
+                    add();
+                } else {
+                    remove();
+                }
+            };
+
+            scope.$watch("show", showOrHide);
+        }
+    };
+}]);
+
+/**
  * Service that shows the alert. It has the following methods:
  *      success     - show success message.
  *      info        - show info message.
