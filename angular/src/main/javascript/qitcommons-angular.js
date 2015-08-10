@@ -595,6 +595,67 @@ qitcommonsModule.directive("qPanel", ["$qUtils", function ($qUtils) {
 }]);
 
 /**
+ * The panel which allows adding content to the page without adding new outer elements to the DOM.
+ * It has only one attribute: show, which accepts angular expression. If the expression is true then the
+ * content of the panel will be added to the DOM otherwise it will be removed. By defult it is equal to true.
+ */
+qitcommonsModule.directive("qSwitch", ["$qUtils", function ($qUtils) {
+    return {
+        restrict: "E",
+        transclude: true,
+        replace: true,
+        scope: {
+            value: "="
+        },
+        template: "",
+        link: function (scope, element, attrs, controller, transclude) {
+            var panels, transcludedScope, transcludedElements;
+
+            var domPoint = $("<!-- q-switch -->");
+            element.after(domPoint);
+            domPoint.after($("<!-- end q-switch -->"));
+            element.remove();
+
+            var collectPanels = function(elements) {
+                panels = {};
+                elements.each(function(i, e) {
+                    e = $(e);
+                    var value = e.attr("value");
+                    var key = value ? value : "";
+                    var arr = panels[key];
+                    if (!arr) {
+                        arr = [];
+                        panels[key] = arr;
+                    }
+
+                    e.children().each(function(i, e){
+                        arr.push(e);
+                    });
+                });
+            };
+            var switchPanels = function(value) {
+                transclude(function(clone, scope) {
+                    if (!panels) {
+                        collectPanels(clone);
+                    }
+                    if (transcludedElements) {
+                        transcludedElements.remove();
+                        transcludedScope.$destroy();
+                    }
+
+                    transcludedElements = panels[value];
+                    transcludedElements = transcludedElements ? $(transcludedElements) : $(panels[""]);
+                    domPoint.after(transcludedElements);
+                    transcludedScope = scope;
+                });
+            };
+
+            scope.$watch("value", switchPanels);
+        }
+    }
+}]);
+
+/**
  * Service that shows the alert. It has the following methods:
  *      success     - show success message.
  *      info        - show info message.
