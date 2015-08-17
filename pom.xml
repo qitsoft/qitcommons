@@ -4,7 +4,7 @@
 
     <groupId>com.qitsoft.qitcommons</groupId>
     <artifactId>qitcommons</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
     <modules>
         <module>angular</module>
         <module>test</module>
@@ -18,7 +18,7 @@
         <connection>scm:git:ssh://git@github.com/qitsoft/qitcommons.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/qitsoft/qitcommons.git</developerConnection>
         <url>https://github.com/qitsoft/qitcommons.git</url>
-        <tag>release-0.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
