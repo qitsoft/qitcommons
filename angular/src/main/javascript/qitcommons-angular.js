@@ -508,9 +508,21 @@ qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
             if (!attrs['for']) {
                 throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
             }
-            if (!ctrl[attrs['for']]) {
-                throw new Error("The qLabel directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs['for'] + "'.");
+            if (!ctrl.$name) {
+                throw new Error("The qLabel directive with text '" + element.text() + "' should be placed in form with name.");
             }
+
+            var fors = attrs['for'].split(/[\s,]+/);
+            element.attr({for: fors[0]});
+
+            var formScope = scope;
+            while (formScope && !formScope[ctrl.$name]) {
+                formScope = formScope.$parent;
+            }
+            if (!formScope) {
+                formScope = scope.$root;
+            }
+
             scope.$watch("disabled", function (value) {
                 if ($qUtils.bool(value, false)) {
                     element.addClass("disabled");
@@ -518,25 +530,30 @@ qitcommonsModule.directive("qLabel", ["$qUtils", function ($qUtils) {
                     element.removeClass("disabled");
                 }
             });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$valid;
-            }, function (value) {
-                element.toggleClass("ng-valid", value);
-            });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$dirty;
-            }, function (value) {
-                element.toggleClass("ng-dirty", value);
-            });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$pristine;
-            }, function (value) {
-                element.toggleClass("ng-pristine", value);
-            });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$invalid;
-            }, function (value) {
-                element.toggleClass("ng-invalid", value);
+
+            var calcState = function(valueFn) {
+                return $.grep(fors, function(e){
+                        if (ctrl[e]) {
+                            return valueFn(ctrl[e]);
+                        } else {
+                            return false;
+                        }
+                }).length > 0;
+            };
+
+            $.each(fors, function(i, e){
+                formScope.$watch(ctrl.$name + "." + e +".$valid", function (value) {
+                    element.toggleClass("ng-valid", !calcState(function(v){return !v.$valid}));
+                });
+                formScope.$watch(ctrl.$name + "." + e +".$dirty", function (value) {
+                    element.toggleClass("ng-dirty", calcState(function(v){return v.$dirty;}));
+                });
+                formScope.$watch(ctrl.$name + "." + e +".$pristine", function (value) {
+                    element.toggleClass("ng-pristine", !calcState(function(v){return !v.$pristine}));
+                });
+                formScope.$watch(ctrl.$name + "." + e +".$invalid", function (value) {
+                    element.toggleClass("ng-invalid", calcState(function(v){return v.$invalid;}));
+                });
             });
         }
     };
