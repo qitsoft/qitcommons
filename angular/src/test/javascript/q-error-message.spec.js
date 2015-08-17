@@ -11,35 +11,35 @@ describe("Test q-error-message directive.", function () {
     }));
 
     it("Adds span.q-error-message.help-block element.", function () {
-        var element = $compile('<form><input name="firstName" ng-model="fname"/><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
+        var element = $compile('<form name="fName"><input name="firstName" ng-model="fname"/><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
         $rootScope.$digest();
 
         expect(element.find("span.q-error-message.help-block").length).toEqual(1);
     });
 
     it("Replaces angular directive.", function () {
-        var element = $compile('<form><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
+        var element = $compile('<form name="fName"><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
         $rootScope.$digest();
 
         expect(element.find("q-error-message").length).toEqual(0);
     });
 
     it("Includes message text.", function () {
-        var element = $compile('<form><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
+        var element = $compile('<form name="fName"><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
         $rootScope.$digest();
 
         expect(element.find("span.help-block").text()).toEqual("The error message for first name.");
     });
 
     it("Is hidden by default.", function () {
-        var element = $compile('<form><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required"/></form>')($rootScope);
+        var element = $compile('<form name="fName"><input name="firstName" ng-model="fname" /><q-error-message for="firstName" error="required"/></form>')($rootScope);
         $rootScope.$digest();
 
         expect(element.find("span.help-block:hidden").length).toEqual(1);
     });
 
     it("It remains hidden for invalid input for other error.", function () {
-        var element = $compile('<form><input name="firstName" ng-model="fname" required/><q-error-message for="firstName" error="pattern"/></form>')($rootScope);
+        var element = $compile('<form name="fName"><input name="firstName" ng-model="fname" required/><q-error-message for="firstName" error="pattern"/></form>')($rootScope);
         $rootScope.$digest();
 
         expect(element.find("span.help-block:hidden").length).toEqual(1);
@@ -57,10 +57,10 @@ describe("Test q-error-message directive.", function () {
         }).toThrowError(/\[\$compile:ctreq\][\s\S]*?\$compile\/ctreq\?p0=form&p1=qErrorMessage/);
     });
 
-    it("Fails for references to undefined input.", function () {
+    it("Fails form without name.", function () {
         expect(function() {
-            $compile('<form name="fName"><input name="firstName" ng-model="name"/><q-error-message for="abra">The error message for first name.</q-error-message></form>')($rootScope);
-        }).toThrowError("The qErrorMessage directive in form 'fName' with text 'The error message for first name.' references and undefined input with name 'abra'.");
+            $compile('<form><input name="firstName" ng-model="name" required/><q-error-message for="firstName" error="required">The error message for first name.</q-error-message></form>')($rootScope);
+        }).toThrowError("The qErrorMessage directive with text 'The error message for first name.' should be placed in form with name.");
     });
 
     it("Fails when no 'error' attribute specified.", function () {

@@ -447,35 +447,38 @@ qitcommonsModule.directive("qErrorMessage", function () {
             if (!attrs['for']) {
                 throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'for' attribute specified.");
             }
-            if (!ctrl[attrs['for']]) {
-                throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' references and undefined input with name '" + attrs['for'] + "'.");
-            }
             if (!attrs.error) {
                 throw new Error("The qErrorMessage directive in form '" + ctrl.$name + "' with text '" + element.text() + "' should have 'error' attribute specified.");
             }
+            if (!ctrl.$name) {
+                throw new Error("The qErrorMessage directive with text '" + element.text() + "' should be placed in form with name.");
+            }
             element.hide();
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$error[attrs.error];
-            }, function (value) {
+
+            var formScope = scope;
+            while (formScope && !formScope[ctrl.$name]) {
+                formScope = formScope.$parent;
+            }
+            if (!formScope) {
+                formScope = scope.$root;
+            }
+
+            var inputPath = ctrl.$name + "." + attrs['for'] + ".";
+
+            formScope.$watch(inputPath + "$error."+attrs.error, function (value) {
                 if (value) {
                     element.fadeIn();
                 } else {
                     element.fadeOut();
                 }
             });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$dirty;
-            }, function (value) {
+            scope.$watch(inputPath + "$dirty", function (value) {
                 element.toggleClass("ng-dirty", value);
             });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$pristine;
-            }, function (value) {
+            scope.$watch(inputPath + "$pristine", function (value) {
                 element.toggleClass("ng-pristine", value);
             });
-            scope.$watch(function () {
-                return ctrl[attrs['for']].$invalid;
-            }, function (value) {
+            scope.$watch(inputPath + "$invalid", function (value) {
                 element.toggleClass("ng-invalid", value);
             });
         }
