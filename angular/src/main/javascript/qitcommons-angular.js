@@ -551,11 +551,6 @@ qitcommonsModule.directive("qPanel", ["$qUtils", function ($qUtils) {
     return {
         restrict: "E",
         transclude: true,
-        replace: true,
-        scope: {
-            show: "="
-        },
-        template: "",
         link: function(scope, element, attrs, controller, transclude) {
             var transcludedScope, transcludedElement;
             var domPoint = $("<!-- q-panel -->");
@@ -589,7 +584,7 @@ qitcommonsModule.directive("qPanel", ["$qUtils", function ($qUtils) {
                 }
             };
 
-            scope.$watch("show", showOrHide);
+            scope.$watch(attrs.show, showOrHide);
         }
     };
 }]);
@@ -599,58 +594,57 @@ qitcommonsModule.directive("qPanel", ["$qUtils", function ($qUtils) {
  * It has only one attribute: show, which accepts angular expression. If the expression is true then the
  * content of the panel will be added to the DOM otherwise it will be removed. By defult it is equal to true.
  */
-qitcommonsModule.directive("qSwitch", ["$qUtils", function ($qUtils) {
+qitcommonsModule.directive("qSwitch", [function () {
     return {
-        restrict: "E",
+        restrict: "EA",
         transclude: true,
-        replace: true,
-        scope: {
-            value: "="
-        },
-        template: "",
         link: function (scope, element, attrs, controller, transclude) {
-            var panels, transcludedScope, transcludedElements;
+            var transcludedScope, transcludedElements;
 
-            var domPoint = $("<!-- q-switch -->");
-            element.after(domPoint);
-            domPoint.after($("<!-- end q-switch -->"));
-            element.remove();
-
-            var collectPanels = function(elements) {
-                panels = {};
-                elements.each(function(i, e) {
+            var findPanels = function(elements, key) {
+                return elements.filter(function(i, e){
+                    return e.nodeType == 1;
+                }).filter(function(i, e) {
                     e = $(e);
                     var value = e.attr("value");
-                    var key = value ? value : "";
-                    var arr = panels[key];
-                    if (!arr) {
-                        arr = [];
-                        panels[key] = arr;
+                    if (value == undefined || value == null) {
+                        value = e.attr("q-switch-case");
+                    }
+                    if (value == undefined || value == null) {
+                        value = e[0].localName;
+                    }
+                    if (value.toLowerCase().replace(/[^a-z]/g, "") == "qswitchcase") {
+                        value = "";
+                    }
+                    if (key == undefined ||key == null) {
+                        key = "";
                     }
 
-                    e.children().each(function(i, e){
-                        arr.push(e);
-                    });
+                    var valueDefault = value == undefined || value == null || value == "" || value == "default" || value == attrs.default;
+                    return (key == "default" && valueDefault) || (!valueDefault && value == key.toString());
                 });
             };
+
             var switchPanels = function(value) {
-                transclude(function(clone, scope) {
-                    if (!panels) {
-                        collectPanels(clone);
-                    }
-                    if (transcludedElements) {
-                        transcludedElements.remove();
-                        transcludedScope.$destroy();
-                    }
+                element.empty();
 
-                    transcludedElements = panels[value];
-                    transcludedElements = transcludedElements ? $(transcludedElements) : $(panels[""]);
-                    domPoint.after(transcludedElements);
-                    transcludedScope = scope;
-                });
+                var elements = findPanels(transcludedElements, value);
+                elements = elements.length != 0 ? elements : findPanels(transcludedElements, "default");
+                element.append(elements);
             };
 
-            scope.$watch("value", switchPanels);
+            transclude(function(clone, scope) {
+                transcludedElements = clone;
+                transcludedScope = scope;
+                element.append(transcludedElements);
+            });
+
+            if (attrs.qSwitch) {
+                scope.$watch(attrs.qSwitch, switchPanels);
+            } else {
+                scope.$watch(attrs.value, switchPanels);
+            }
+
         }
     }
 }]);

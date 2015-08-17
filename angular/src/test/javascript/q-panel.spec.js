@@ -1,8 +1,19 @@
 describe("Test q-panel panel.", function() {
     var $compile, $rootScope;
+    var testModule;
 
     beforeEach(function() {
+        testModule = angular.module("TestQPanelModule", []);
+        testModule.controller("TestController", function($scope){
+            $scope.value = true;
+
+            $scope.$on("changeValue", function(event, newValue) {
+                $scope.value = newValue;
+            });
+        });
+
         module("qitcommonsModule");
+        module("TestQPanelModule");
 
         inject(function(_$compile_, _$rootScope_) {
             $compile = _$compile_;
@@ -49,6 +60,28 @@ describe("Test q-panel panel.", function() {
 
         $rootScope._show = false;
         $rootScope.$digest();
+        var innerPanel = element.find(".inner-panel");
+        expect(innerPanel.length).toEqual(0);
+    });
+
+    it("Can be marked with ng-controller directive.", function(){
+        var element = $compile('<div><q-panel show="value" ng-controller="TestController"><div class="inner-panel">Hello</div></q-panel></div>')($rootScope);
+        $rootScope.$digest();
+
+        var innerPanel = element.find(".inner-panel");
+        expect(innerPanel.length).toEqual(1);
+    });
+
+    it("Can be hidden from applied controller.", function(){
+        var element = $compile('<div><q-panel show="value" ng-controller="TestController"><div class="inner-panel">Hello</div></q-panel></div>')($rootScope);
+        $rootScope.$digest();
+
+        var innerPanel = element.find(".inner-panel");
+        expect(innerPanel.length).toEqual(1);
+
+        $rootScope.$broadcast("changeValue", false);
+        $rootScope.$digest();
+
         var innerPanel = element.find(".inner-panel");
         expect(innerPanel.length).toEqual(0);
     });
