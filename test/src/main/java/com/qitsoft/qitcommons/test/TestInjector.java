@@ -33,6 +33,6 @@ public class TestInjector {
             }
         }
 
-        inject(service, serviceType.getSuperclass(), component);
+        inject(service, serviceType.getSuperclass(), component, genericTypes);
     }
 }

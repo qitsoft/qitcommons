@@ -69,7 +69,20 @@ public class TestInjectorTest {
         assertThat(service.components, sameInstance(components));
     }
 
+    @Test
+    public void testInjectGenericInParent() throws IllegalAccessException {
+        SampleService2 service = new SampleService22();
+        List<Component1> components = Arrays.asList(new Component1());
+
+        TestInjector.inject(service, components, Component1.class);
+
+        assertThat(service.components, sameInstance(components));
+    }
+
     private static class SampleService11 extends SampleService1{
+
+    }
+    private static class SampleService22 extends SampleService2 {
 
     }
 
