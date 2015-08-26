@@ -3,11 +3,21 @@ package com.qitsoft.qitcommons.model;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SearchFilterTest {
 
     public static final String QUERY = "QUERY";
+
+    @Test
+    public void testDefaultConstructor() {
+        SearchFilter<String> filter = new SearchFilter<>();
+
+        assertThat(filter.getQuery(), nullValue());
+        assertThat(filter.getPage(), equalTo(0));
+        assertThat(filter.getPageSize(), equalTo(0));
+    }
 
     @Test
     public void testNonPagedConstructor() {
