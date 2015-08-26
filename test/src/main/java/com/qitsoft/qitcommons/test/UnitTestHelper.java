@@ -10,6 +10,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -39,6 +41,18 @@ import static org.junit.Assert.assertTrue;
  * Unit test helper
  */
 public class UnitTestHelper {
+
+    /**
+     * The helper method which allows injecting the components into service classes.
+     *
+     * @param service the service where the to inject the component.
+     * @param component the component to inject.
+     * @param genericTypes the generic types used to narrow the injectable field.
+     * @throws IllegalAccessException when the field could not be set.
+     */
+    public static void inject(Object service, Object component, Class... genericTypes) throws IllegalAccessException {
+        inject(service, service.getClass(), component, genericTypes);
+    }
 
     public static void testProperties(Object object, String... exclude) throws Exception {
         BeanInfo beanInfo = Introspector.getBeanInfo(object.getClass());
@@ -514,4 +528,39 @@ public class UnitTestHelper {
             return logCapturingStream.toString();
         }
     }
+
+    /**
+     * The helper method which allows injecting the components into service classes.
+     *
+     * @param service the service where the to inject the component.
+     * @param serviceType the type of the service whose fields should be injected.
+     * @param component the component to inject.
+     * @param genericTypes the generic types used to narrow the injectable field.
+     * @throws IllegalAccessException when the field could not be set.
+     */
+    private static void inject(Object service, Class serviceType, Object component, Class... genericTypes) throws IllegalAccessException {
+        if (serviceType == Object.class) {
+            return;
+        }
+
+        for (Field field : serviceType.getDeclaredFields()) {
+            if (field.getType().isAssignableFrom(component.getClass())) {
+                if (field.getGenericType() != null && field.getGenericType() instanceof ParameterizedType) {
+                    Type[] typeArguments = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+                    if (Arrays.equals(typeArguments, genericTypes)) {
+                        field.setAccessible(true);
+                        field.set(service, component);
+                        return;
+                    }
+                } else {
+                    field.setAccessible(true);
+                    field.set(service, component);
+                    return;
+                }
+            }
+        }
+
+        inject(service, serviceType.getSuperclass(), component, genericTypes);
+    }
+
 }

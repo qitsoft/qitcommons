@@ -16,7 +16,7 @@ public class TestInjectorTest {
         SampleService1 service = new SampleService1();
         Component1 component = new Component1();
 
-        TestInjector.inject(service, component);
+        UnitTestHelper.inject(service, component);
 
         assertThat(service.componentOne, sameInstance(component));
     }
@@ -26,7 +26,7 @@ public class TestInjectorTest {
         SampleService1 service = new SampleService1();
         Component1 component = new Component1();
 
-        TestInjector.inject(service, component);
+        UnitTestHelper.inject(service, component);
 
         assertThat(service.componentOne, sameInstance(component));
         assertThat(service.componentOne1, nullValue());
@@ -37,7 +37,7 @@ public class TestInjectorTest {
         SampleService1 service = new SampleService1();
         Component1 component = new Component11();
 
-        TestInjector.inject(service, component);
+        UnitTestHelper.inject(service, component);
 
         assertThat(service.componentOne, sameInstance(component));
     }
@@ -47,7 +47,7 @@ public class TestInjectorTest {
         SampleService1 service = new SampleService11();
         Component1 component = new Component11();
 
-        TestInjector.inject(service, component);
+        UnitTestHelper.inject(service, component);
 
         assertThat(service.componentOne, sameInstance(component));
     }
@@ -56,7 +56,7 @@ public class TestInjectorTest {
     public void testInjectMissingField() throws IllegalAccessException {
         SampleService1 service = new SampleService11();
 
-        TestInjector.inject(service, "hello");
+        UnitTestHelper.inject(service, "hello");
     }
 
     @Test
@@ -64,7 +64,7 @@ public class TestInjectorTest {
         SampleService2 service = new SampleService2();
         List<Component1> components = Arrays.asList(new Component1());
 
-        TestInjector.inject(service, components, Component1.class);
+        UnitTestHelper.inject(service, components, Component1.class);
 
         assertThat(service.components, sameInstance(components));
     }
@@ -74,7 +74,7 @@ public class TestInjectorTest {
         SampleService2 service = new SampleService22();
         List<Component1> components = Arrays.asList(new Component1());
 
-        TestInjector.inject(service, components, Component1.class);
+        UnitTestHelper.inject(service, components, Component1.class);
 
         assertThat(service.components, sameInstance(components));
     }
