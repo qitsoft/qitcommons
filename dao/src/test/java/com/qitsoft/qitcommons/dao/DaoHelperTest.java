@@ -209,6 +209,32 @@ public class DaoHelperTest {
     }
 
     @Test
+    public void testFilterInLowerCase() {
+        StringExpression expression1 = mock(StringExpression.class);
+        StringExpression expression2 = mock(StringExpression.class);
+        StringExpression expression = mock(StringExpression.class);
+
+        doReturn(expression).when(daoHelper).concat(eq(expression1), eq(expression2));
+
+        BooleanExpression[] expressions = new BooleanExpression[]{
+                mock(BooleanExpression.class),
+                mock(BooleanExpression.class)
+        };
+        BooleanExpression returnExpression = mock(BooleanExpression.class);
+
+        when(expression.like(anyString())).thenReturn(expressions[0]).thenReturn(expressions[1]);
+        when(expressions[0].and(eq(expressions[1]))).thenReturn(returnExpression);
+
+        BooleanExpression result = daoHelper.filter(new String[]{"Aa", "Bb"}, expression1, expression2);
+
+        assertThat(result, notNullValue());
+        verify(expression).like(eq("%aa%"));
+        verify(expression).like(eq("%bb%"));
+        verify(expressions[0]).and(eq(expressions[1]));
+        verify(daoHelper).concat(eq(expression1), eq(expression2));
+    }
+
+    @Test
     public void testProperties() throws Exception {
         SessionFactory sessionFactory = UnitTestHelper.getSampleValue(SessionFactory.class);
         daoHelper.setSessionFactory(sessionFactory);

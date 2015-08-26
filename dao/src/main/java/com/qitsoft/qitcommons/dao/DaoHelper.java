@@ -86,7 +86,7 @@ public class DaoHelper {
         List<BooleanExpression> booleanExpressions = new ArrayList<>();
         StringExpression mergedExpression = concat(expressions);
         for (String q : query) {
-            booleanExpressions.add(mergedExpression.like("%" + q + "%"));
+            booleanExpressions.add(mergedExpression.like("%" + q.toLowerCase() + "%"));
         }
         return BooleanExpression.allOf(Iterables.toArray(booleanExpressions, BooleanExpression.class));
     }
