@@ -472,13 +472,13 @@ qitcommonsModule.directive("qErrorMessage", function () {
                     element.fadeOut();
                 }
             });
-            scope.$watch(inputPath + "$dirty", function (value) {
+            formScope.$watch(inputPath + "$dirty", function (value) {
                 element.toggleClass("ng-dirty", value);
             });
-            scope.$watch(inputPath + "$pristine", function (value) {
+            formScope.$watch(inputPath + "$pristine", function (value) {
                 element.toggleClass("ng-pristine", value);
             });
-            scope.$watch(inputPath + "$invalid", function (value) {
+            formScope.$watch(inputPath + "$invalid", function (value) {
                 element.toggleClass("ng-invalid", value);
             });
         }

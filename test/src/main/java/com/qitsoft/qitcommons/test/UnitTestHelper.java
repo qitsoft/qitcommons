@@ -81,7 +81,7 @@ public class UnitTestHelper {
     /**
      * The helper method allowing in DSL mode to validate the method and its annotations. To use it you just need to
      * specify the class to validate, then the method(s) and the specify the assertions:
-     * <code><pre>
+     * <pre>
      * UnitTestHelper.test(EvaluationProfileServiceImpl.class)
      *     .method("methodName", String.class, String.class, Pojo.class)
      *         .assertMethodOrClassAnnotated(Validate.class)
@@ -89,7 +89,7 @@ public class UnitTestHelper {
      *         .assertParamAnnotated(1, NotBlank.class)
      *         .assertParamAnnotated(2, NotNull.class)
      *         .throwsException(BSIPPException.class);
-     * </pre></code>
+     * </pre>
      *
      * @param klass the DSL object to validate the method.
      * @return raises an assertion error on checks  failures.
@@ -217,7 +217,7 @@ public class UnitTestHelper {
          * @param name           the name of method to validate.
          * @param parameterTypes the parameter types of the method.
          * @return the method tester.
-         * @throws RuntimeException(NoSuchMethodException) when no method found with this signature.
+         * @throws RuntimeException (NoSuchMethodException) when no method found with this signature.
          */
         public MethodTester method(String name, Class... parameterTypes) {
             try {
@@ -232,7 +232,7 @@ public class UnitTestHelper {
          *
          * @param name the name of field to validate.
          * @return the field tester.
-         * @throws RuntimeException(NoSuchFieldException) when no field found declared in the class
+         * @throws RuntimeException (NoSuchFieldException) when no field found declared in the class
          *                                                to test.
          */
         public FieldTester field(String name) {
