@@ -138,7 +138,7 @@ qitcommonsModule.directive("qPager", ["$location", function ($location) {
         restrict: "E",
         replace: true,
         template: '<ul class="q-pager pagination">' +
-        '<li ng-repeat="p in pages" ng-class="{active: p.page == page, disabled: !p.clicakble}" ng-show="total>1">' +
+        '<li ng-repeat="p in pages" ng-class="{active: p.page == page, disabled: !p.clickable}" ng-show="calculatedTotal>1">' +
         '<span ng-if="!p.clickable">{{p.page}}</span>' +
         '<a ng-if="p.clickable" href="javascript:void(0);" ng-click="p.action()">{{p.page}}</a>' +
         '</li>' +
